@@ -1,26 +1,39 @@
 import os
+import tensorflow as tf
 from flask import Flask, request, redirect, render_template, flash
 from werkzeug.utils import secure_filename
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.preprocessing import image
 
 import numpy as np
+import matplotlib.pyplot as plt
+import cv2
+
+@tf.keras.utils.register_keras_serializable()
+class CentralCropLayer(tf.keras.layers.Layer):
+    def __init__(self, crop_size):
+        super(CentralCropLayer, self).__init__()
+        self.crop_size = crop_size
+
+    def call(self, inputs):
+        cropped_images = tf.image.central_crop(inputs, central_fraction=self.crop_size)
+        return cropped_images
 
 classes = ["0","1","2","3","4","5","6","7","8","9"]
 
-classes = ['細菌性斑点',
-           '早期病害',
-           '晩枯病',
-           '葉カビ',
-           'セプトリア葉斑病',
-           'ハダニ類 二斑点性ハダニ',
-           'ターゲットスポット',
-           'トマト黄化葉巻病',
-           'トマトモザイクウイルス',
-           '健康',
-           'うどんこ病']
+classes = ['細菌性斑点 (Bacterial_spot)',
+           '早期病害 (Early_blight)',
+           '晩枯病 (Late_blight)',
+           '葉カビ (Leaf_Mold)',
+           'セプトリア葉斑病 (Septoria_leaf_spot)',
+           'ハダニ類 二斑点性ハダニ (Spider_mites Two-spotted_spider_mites)',
+           'ターゲットスポット (Target_Spot)',
+           'トマト黄化葉巻病 (Tomoto_Yellow_Leaf_Curl_virus)',
+           'トマトモザイクウイルス (Tomoto_mosaic_virus)',
+           '健康 (healthy)',
+           'うどんこ病 (powdery_mildew)']
 
-image_size = 64
+image_size = 128
 
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -55,7 +68,7 @@ def upload_file():
             #変換したデータをモデルに渡して予測する
             result = model.predict(data)[0]
             predicted = result.argmax()
-            pred_answer = "この葉は " + classes[predicted] + " です"
+            pred_answer = f"この葉は {result[predicted]*100:.2f} %で {classes[predicted]} です"
 
             return render_template("index.html",answer=pred_answer)
 
