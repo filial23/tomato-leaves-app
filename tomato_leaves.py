@@ -1,13 +1,10 @@
 import os
+import numpy as np
 import tensorflow as tf
 from flask import Flask, request, redirect, render_template, flash
 from werkzeug.utils import secure_filename
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.preprocessing import image
-
-import numpy as np
-import matplotlib.pyplot as plt
-import cv2
 
 @tf.keras.utils.register_keras_serializable()
 class CentralCropLayer(tf.keras.layers.Layer):
