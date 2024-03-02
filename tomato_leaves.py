@@ -41,7 +41,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 #学習済みモデルをロード
-model = load_model('./model.keras', compile=False)
+model = load_model('./model.keras', custom_objects={'CentralCropLayer': CentralCropLayer}, compile=False)
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
